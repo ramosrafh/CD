@@ -1,11 +1,42 @@
-import socket
-import os
-
-
 # TRABALHO DE COMUNICAÇÃO DE DADOS
 
 
-class Comunicate():
+import socket
+import os
+import sys
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QApplication, QDialog
+from PyQt5.uic import loadUi
+
+
+
+class EditarEvento(QDialog):
+    def __init__(self):
+        super(EditarEvento, self).__init__()
+        loadUi('client.ui', self)
+        self.executar()
+
+    def executar(self):
+        self.b_editar.clicked.connect(self.editar_evento)
+        self.b_editar.clicked.connect(self.close)
+
+
+
+
+
+class Comunicate(QDialog):
+
+    def __init__(self):
+        super(EditarEvento, self).__init__()
+        loadUi('editar_evento.ui', self)
+        self.executar()
+
+    def executar(self):
+        self.b_editar.clicked.connect(self.editar_evento)
+        self.b_editar.clicked.connect(self.close)
+
+
+    ### THE CODE
 
     def message(self):
         msg = input("Type the message here: ")
