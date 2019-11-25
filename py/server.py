@@ -32,26 +32,35 @@ class Server(QDialog):
         s.bind((host, port))
         s.listen(5)
 
-
         client_socket, address = s.accept()
-        print("Conencted to - ", address, "\n")
+        
+        while True:
+            data = client_socket.recv(2048)
+            dec = data.decode('utf8')
+            cri = self.decript(dec)
+            print("decriii", cri)
+            #my_bytes = bytearray(data)
+            print(dec)
 
-        data = client_socket.recv(2048)
-        dec = data.decode('utf8')
-        #my_bytes = bytearray(data)
-        print(dec)
-
-        self.message.setText(dec)
+            self.message.setText(cri)
 
 
         print("The following data was received - ", data)
                 
-
+    def decript(self, msg):
+        alfabeto = 'abcdefghijklmnopqrstuvwxyz'
+        criptografia = ''
+        for x in msg:
+            pos = alfabeto.find(x)
+            new_pos = (pos-5) % 26
+            criptografia+=alfabeto[new_pos]
+        print(criptografia)
+        return criptografia
 
 
 app = QApplication(sys.argv)
 widget = Server()
-widget.show()
+widget.show()   
 sys.exit(app.exec_())
 
 

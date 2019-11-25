@@ -10,12 +10,14 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QApplication, QDialog
 from PyQt5.uic import loadUi
 
+ALGORITMO = sys.argv[1]
 
 class Client(QDialog):
 
     def __init__(self):
         super(Client, self).__init__()
         loadUi('client.ui', self)
+        self.connect()
         self.executar()
 
     def executar(self):
@@ -24,37 +26,33 @@ class Client(QDialog):
 
     ### THE CODE
 
+    def connect(self):
+        self.s = socket.socket()
+        self.host = socket.gethostname()
+        self.port = 1333
+        print("Connecting to the host...")
+        self.s.connect((self.host, self.port))
+
     def enviar(self):
 
-        s = socket.socket()
-        host = socket.gethostname()
-        port = 1333
+        while True:
+            msg = self.message()
+            cri = self.cript(msg)
+            conv = self.msg2bin(cri)
 
-        msg = self.message()
-        conv = self.msg2bin(msg)
+            print("criii", cri)
 
-        test = self.msg2array(msg)
-        array = []
+            if ALGORITMO == "nrz":
+                array = self.nrz(msg)
+            elif ALGORITMO == "rz":
+                array = self.rz(msg)
+            else:
+                array = None
 
-        for i in test:
-            array.append(i)
+            self.s.send(conv)
+            #self.s.close()
 
-        print(array)
-
-        s.connect((host, port))
-        s.send(conv)
-
-        for i in array:
-            if i == ' ':
-                array.remove(i)
-
-        input_amp = array
-        plt.plot(input_amp, color='red', drawstyle='steps-pre')
-        plt.title("Comunicação de Dados - Trabalho 2")
-        plt.ylabel('Amplitude')
-        plt.xlabel("Time")
-        plt.savefig("waveform.png")
-        plt.show()
+            self.graph(array)
         
 
     def message(self):
@@ -69,12 +67,54 @@ class Client(QDialog):
 
         return conv
 
-    def msg2array(self, msg):
+    def nrz(self, msg):
         conv = ' '.join(format(ord(x), 'b') for x in msg)
-        # print(conv)
-        return conv
+        array = []
+        for i in conv:
+            array.append(i)
+        for i in array:
+            if i == ' ':
+                array.remove(i)
+        return array
+    
+    def rz(self, msg):
+        conv = ' '.join(format(ord(x), 'b') for x in msg)
+        array = []
+        for i in conv:
+            array.append(i)
+        for i in array:
+            if i == ' ':
+                array.remove(i)
+        
+        new_array = []
 
-    # def nrz():
+        for i, item in enumerate(array):
+            if item == '0':
+                array[i] = '-1'
+        
+        for i in array:
+            new_array.append(i)
+            new_array.append(0)
+
+        return new_array
+    
+    def cript(self, msg):
+        alfabeto = 'abcdefghijklmnopqrstuvwxyz'
+        criptografia = ''
+        for x in msg:
+            pos = alfabeto.find(x)
+            new_pos = (pos+5) % 26
+            criptografia+=alfabeto[new_pos]
+        return criptografia
+
+    def graph(self, array):
+        plt.plot(array, color='red', drawstyle='steps-pre')
+        plt.title("Comunicação de Dados - Trabalho 2")
+        plt.ylabel('Amplitude')
+        plt.xlabel("Time")
+        plt.gca().invert_yaxis()
+        plt.savefig("waveform.png")
+        plt.show()
 
 
 app = QApplication(sys.argv)
